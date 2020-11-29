@@ -1,7 +1,8 @@
 require("dotenv").config({path: "../.env"});
 
-const Sale = artifacts.require("./MyTokenSale.sol");
+const KYC = artifacts.require("./MyKYC.sol");
 const Token = artifacts.require("./MyToken.sol");
+const Sale = artifacts.require("./MyTokenSale.sol");
 
 var chai = require("./chaisetup.js");
 const BN = web3.utils.BN;
@@ -24,9 +25,11 @@ contract("Token Sale", async accounts => {
   });
 
   it("should be possible to buy a token by sending ether to the crowdsale contract", async () => {
+    let kycInstance = await KYC.deployed();
     let tokenInstance = await Token.deployed();
     let saleInstance = await Sale.deployed();
     let balanceBefore = await tokenInstance.balanceOf(recipientAccount);
+    await kycInstance.completeKYC(recipientAccount, {from: deployerAccount});
 
     expect(saleInstance.sendTransaction({from: recipientAccount, value: web3.utils.toWei("1", "wei")})).to.eventually.be.fulfilled;
     return expect(tokenInstance.balanceOf(recipientAccount)).to.eventually.be.a.bignumber.equal(balanceBefore.add(new BN(1)));
