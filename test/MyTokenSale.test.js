@@ -15,4 +15,20 @@ contract("Token Sale", async accounts => {
 
     return expect(tokenInstance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(new BN(0));
   });
+
+  it("should have all tokens in the crowdsale contract by default", async () => {
+    let tokenInstance = await Token.deployed();
+    let totalSupply = await tokenInstance.totalSupply();
+
+    return expect(tokenInstance.balanceOf(Sale.address)).to.eventually.be.a.bignumber.equal(totalSupply);
+  });
+
+  it("should be possible to buy a token by sending ether to the crowdsale contract", async () => {
+    let tokenInstance = await Token.deployed();
+    let saleInstance = await Sale.deployed();
+    let balanceBefore = await tokenInstance.balanceOf(recipientAccount);
+
+    expect(saleInstance.sendTransaction({from: recipientAccount, value: web3.utils.toWei("1", "wei")})).to.eventually.be.fulfilled;
+    return expect(tokenInstance.balanceOf(recipientAccount)).to.eventually.be.a.bignumber.equal(balanceBefore.add(new BN(1)));
+  });
 });
