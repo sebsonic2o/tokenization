@@ -1,4 +1,7 @@
 const path = require("path");
+require('dotenv').config({path: './.env'});
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const MetaMaskAccountIndex = 0;
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -7,6 +10,15 @@ module.exports = {
   networks: {
     develop: {
       port: 8545
+    },
+    ganache_local: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          "http://127.0.0.1:7545",
+          MetaMaskAccountIndex
+        ),
+      network_id: 5777
     }
   },
   compilers: {

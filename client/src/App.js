@@ -7,7 +7,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = {loaded: false};
+  state = {loaded: false, kycAddress: "", tokenSaleAddress: ""};
 
   componentDidMount = async () => {
     try {
@@ -37,7 +37,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({loaded: true});
+      this.setState({loaded: true, tokenSaleAddress: this.saleInstance._address});
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -47,23 +47,36 @@ class App extends Component {
     }
   };
 
+  handleInputChange = (event) => {
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
+    this.setState({
+      [name]: value
+    });
+  };
+
+  handleWhitelisting = async () => {
+    const {kycAddress} = this.state;
+    console.log(kycAddress, this.accounts[0]);
+    let result = await this.kycInstance.methods.completeKYC(kycAddress).send({from: this.accounts[0]});
+    console.log(result);
+    alert("Address " + kycAddress + " has been whitelisted");
+  };
+
   render() {
     if (!this.state.loaded) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        <h1>StarDucks Cappuccino Token Sale</h1>
+        <p>Get your token today!</p>
+        <h2>KYC Whitelisting</h2>
+        Address to allow: <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.handleInputChange} />
+        <button type="button" onClick={this.handleWhitelisting}>Whitelist</button>
+        <h2>Buy Cappuccino Tokens</h2>
+        <p>Send ether to this address: {this.state.tokenSaleAddress}</p>
       </div>
     );
   }
