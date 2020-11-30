@@ -19,6 +19,24 @@ module.exports = {
           MetaMaskAccountIndex
         ),
       network_id: 5777
+    },
+    goerli_infura: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          process.env.GOERLI_INFURA,
+          MetaMaskAccountIndex
+        ),
+      network_id: 5
+    },
+    ropsten_infura: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          process.env.ROPSTEN_INFURA,
+          MetaMaskAccountIndex
+        ),
+      network_id: 3
     }
   },
   compilers: {
