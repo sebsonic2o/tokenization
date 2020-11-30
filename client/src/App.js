@@ -7,7 +7,14 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = {loaded: false, kycAddress: "", tokenSaleAddress: "", userTokens: 0, tokenSymbol: ""};
+  state = {
+    loaded: false,
+    kycAddress: "",
+    tokenSaleAddress: "",
+    userTokens: 0,
+    tokenSymbol: "",
+    tokenName: ""
+  };
 
   componentDidMount = async () => {
     try {
@@ -36,12 +43,18 @@ class App extends Component {
       );
 
       let tokenSymbol = await this.tokenInstance.methods.symbol().call();
+      let tokenName = await this.tokenInstance.methods.name().call();
 
       this.listenToTokenTransfer();
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({loaded: true, tokenSaleAddress: this.saleInstance._address, tokenSymbol: tokenSymbol}, this.updateUserTokens);
+      this.setState({
+        loaded: true,
+        tokenSaleAddress: this.saleInstance._address,
+        tokenSymbol: tokenSymbol,
+        tokenName: tokenName
+      }, this.updateUserTokens);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -87,12 +100,12 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>StarDucks Cappuccino Token Sale</h1>
+        <h1>{this.state.tokenName} Sale</h1>
         <p>Get your token today!</p>
         <h2>KYC Whitelisting</h2>
         Address to allow: <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.handleInputChange} />
         <button type="button" onClick={this.handleWhitelisting}>Whitelist</button>
-        <h2>Buy Cappuccino Tokens</h2>
+        <h2>Buy {this.state.tokenSymbol} Tokens</h2>
         <p>Send ether to this address: {this.state.tokenSaleAddress}</p>
         <p>You have: {this.state.userTokens + " " + this.state.tokenSymbol}</p>
         <button type="button" onClick={this.handleBuyToken}>Buy more tokens</button>
