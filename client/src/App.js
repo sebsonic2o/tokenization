@@ -7,7 +7,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = {loaded: false, kycAddress: "", tokenSaleAddress: ""};
+  state = {loaded: false, kycAddress: "", tokenSaleAddress: "", userTokens: 0, tokenSymbol: ""};
 
   componentDidMount = async () => {
     try {
@@ -35,9 +35,13 @@ class App extends Component {
         SaleContract.networks[this.networkId] && SaleContract.networks[this.networkId].address
       );
 
+      let tokenSymbol = await this.tokenInstance.methods.symbol().call();
+
+      this.listenToTokenTransfer();
+
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({loaded: true, tokenSaleAddress: this.saleInstance._address});
+      this.setState({loaded: true, tokenSaleAddress: this.saleInstance._address, tokenSymbol: tokenSymbol}, this.updateUserTokens);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -46,6 +50,15 @@ class App extends Component {
       console.error(error);
     }
   };
+
+  updateUserTokens = async () => {
+    let userTokens = await this.tokenInstance.methods.balanceOf(this.accounts[0]).call();
+    this.setState({userTokens: userTokens});
+  }
+
+  listenToTokenTransfer = () => {
+    this.tokenInstance.events.Transfer({to: this.accounts[0]}).on("data", this.updateUserTokens);
+  }
 
   handleInputChange = (event) => {
     const target = event.target;
@@ -64,6 +77,10 @@ class App extends Component {
     alert("Address " + kycAddress + " has been whitelisted");
   };
 
+  handleBuyToken = async () => {
+    await this.saleInstance.methods.buyTokens(this.accounts[0]).send({from: this.accounts[0], value: this.web3.utils.toWei("1", "wei")});
+  };
+
   render() {
     if (!this.state.loaded) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -77,6 +94,8 @@ class App extends Component {
         <button type="button" onClick={this.handleWhitelisting}>Whitelist</button>
         <h2>Buy Cappuccino Tokens</h2>
         <p>Send ether to this address: {this.state.tokenSaleAddress}</p>
+        <p>You have: {this.state.userTokens + " " + this.state.tokenSymbol}</p>
+        <button type="button" onClick={this.handleBuyToken}>Buy more tokens</button>
       </div>
     );
   }
